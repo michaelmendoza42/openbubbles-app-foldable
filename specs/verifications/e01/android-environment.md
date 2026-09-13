@@ -1,6 +1,6 @@
 # Android environment setup evidence
 
-## Status: blocked — native runtime not launched
+## Status: emulator verified — app build remains blocked
 
 User approved user-local toolchain/image installation and Android SDK license acceptance. No system package installation, shell-profile edit, release signing or live Apple-account setup was performed.
 
@@ -26,10 +26,20 @@ These two tests check the Flutter testing/platform-channel infrastructure, not O
 
 ## Native blockers / attempted proof
 
-- Background launch using nohup was denied twice by permission rule `<indirection-bash-wrapper>`, including after explicit user approval. No alternate launch mechanism was used to bypass the rule. No AVD has booted; ADB/rotation/screenshots remain unverified.
+- Background launch using nohup was denied twice. The user subsequently explicitly approved foreground launch without background wrappers. It succeeded, cold-booting in about 41 seconds. Concurrent foreground emulator and ADB checker then passed the repeatable OS smoke test below and shut down cleanly.
 - `flutter build apk --no-pub --flavor alpha --debug --target-platform android-x64` was attempted. It timed out after 240 seconds during `assembleAlphaDebug`, without a compiler diagnostic or completed APK. No tracked app files changed. A process check afterward found no remaining Flutter build/GradleWrapperMain process.
 - Rust/rustup, protoc and native compilation prerequisites are still absent from PATH. Android Studio and Linux desktop build tools are not installed; Linux desktop doctor failures are outside Android setup scope.
-- No portrait product tests, real native rotation, restart persistence, or app screenshots have been produced. e01 stories remain unstarted; this is infrastructure preparation only.
+- No portrait product tests, app restart persistence, or OpenBubbles screenshots have been produced. e01 stories remain unstarted; the native OS smoke test is not feature acceptance.
+
+### Verified native OS smoke
+
+`python3 test_driver/android_emulator_smoke.py --output ~/.cache/openbubbles-android-setup/runtime-verified --shutdown` passed against the foreground Pixel Tablet AVD on API 36:
+- Landscape 2560×1600 → portrait 1600×2560 → landscape 2560×1600.
+- Physical density 320 dpi (800dp smallest width).
+- Screenshots show the Android Settings app; portrait screenshot visually inspected.
+- Original WindowManager rotation mode restored; emulator stopped with `adb emu kill`.
+
+The first settings-table rotation attempt did not turn the display. A subsequent diagnostic ran too early for WindowManager. The reusable checker waits for the window service, uses `wm user-rotation lock`, and verifies screenshot dimensions. This is forced test-device rotation, not a test of sensor auto-rotate or app-requested portrait lock.
 
 ## Reuse / foreground launch
 
@@ -54,7 +64,7 @@ adb -s emulator-5554 shell wm size
 adb -s emulator-5554 shell wm density
 ```
 
-These are next-step commands, not recorded pass evidence. Only run one AVD at a time initially. Stop with `adb -s emulator-5554 emu kill`. Foreground startup also remains subject to the user's permission policy; the agent has not attempted it.
+For the repeatable check, run `python3 test_driver/android_emulator_smoke.py --output ~/.cache/openbubbles-android-setup/runtime-verified --shutdown` in the second terminal. It only accepts an isolated `openbubbles_tablet_*` AVD. Run one AVD at a time initially. The foreground launch and checker have been exercised successfully.
 
 ## Artifacts
 
@@ -65,6 +75,6 @@ Local setup logs: `~/.cache/openbubbles-android-setup/`:
 - `app-android-x64-build.log`
 - `sdk-install.log`, `sdk-api35-install.log`, `licenses-cli13.log`
 
-Screenshots: none — emulator launch blocked. Playwright: not used — native Android surface. Installed SDK/JDK/Flutter initially measured about 10.3 GB before subsequent Flutter build caches and CLI-13 installation; downloads/caches consume additional space.
+Latest verified run: `~/.cache/openbubbles-android-setup/runtime-verified/run-14c7z_o5/`. Screenshots: `portrait.png`, `landscape-before.png`, `landscape-after.png`; machine-readable evidence: `result.json`, including `rotation_restored: true` and `shutdown_verified: true`. Each run now creates a unique directory and only publishes a passing receipt after cleanup verification, preventing stale pass evidence on failed reruns. Playwright: not used — native Android surface. Installed SDK/JDK/Flutter initially measured about 10.3 GB before subsequent Flutter build caches and CLI-13 installation; downloads/caches consume additional space.
 
-Next: resolve emulator-launch permission and native build prerequisites; boot/observe the tablet; implement the planned host-driven native matrix without mistaking these channel smoke tests for feature coverage.
+Next: resolve native app-build prerequisites and build timeout, then implement the planned native app matrix. Emulator permission is no longer a blocker for the explicitly approved foreground approach. Do not mistake OS/channel smoke tests for feature coverage.

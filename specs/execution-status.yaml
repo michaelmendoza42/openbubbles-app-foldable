@@ -6,13 +6,13 @@ environment:
   flutter_java_android_sdk: installed
   native_submodules: initialized
   channel_smoke_tests: "2 passed; infrastructure only"
-  emulator: "AVDs created; launch permission blocked"
+  emulator: "API 36 tablet foreground boot and OS rotation round-trip passed; cleanly stopped"
   app_build: "x86_64 build timed out; Rust/protoc prerequisites remain"
 stories:
   e01s01:
     status: not_started
     verification: not_run
-    blockers: [emulator_launch_permission, native_build_prerequisites, native_device_matrix]
+    blockers: [native_build_prerequisites, native_device_matrix]
   e01s02:
     status: not_started
     verification: not_run
