@@ -7,7 +7,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:secure_application/secure_application.dart';
@@ -389,17 +388,31 @@ class _MiscPanelState extends OptimizedState<MiscPanel> {
                         ),
                       )),
                   const SettingsDivider(),
+                  if (!kIsWeb && !kIsDesktop)
+                    Obx(() => SettingsSwitch(
+                          onChanged: (bool val) async {
+                            ss.settings.lockToPortrait.value = val;
+                            await ss.settings.saveOne('lockToPortrait');
+                            await ss.applyOrientationPolicy();
+                          },
+                          initialVal: ss.settings.lockToPortrait.value,
+                          title: "Lock to Portrait",
+                          subtitle: "Keeps OpenBubbles upright while this setting is enabled",
+                          backgroundColor: tileColor,
+                          leading: const SettingsLeadingIcon(
+                            iosIcon: CupertinoIcons.lock,
+                            materialIcon: Icons.screen_lock_portrait,
+                            containerColor: Colors.orange
+                          ),
+                        )),
+                  if (!kIsWeb && !kIsDesktop)
+                    const SettingsDivider(),
                   if (Platform.isAndroid)
                     Obx(() => SettingsSwitch(
-                          onChanged: (bool val) {
+                          onChanged: (bool val) async {
                             ss.settings.allowUpsideDownRotation.value = val;
-                            saveSettings();
-                            SystemChrome.setPreferredOrientations([
-                              DeviceOrientation.landscapeRight,
-                              DeviceOrientation.landscapeLeft,
-                              DeviceOrientation.portraitUp,
-                              if (ss.settings.allowUpsideDownRotation.value) DeviceOrientation.portraitDown,
-                            ]);
+                            await ss.settings.saveOne('allowUpsideDownRotation');
+                            await ss.applyOrientationPolicy();
                           },
                           initialVal: ss.settings.allowUpsideDownRotation.value,
                           title: "Allow Upside-Down Rotation",

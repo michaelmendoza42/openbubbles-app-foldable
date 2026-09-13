@@ -289,10 +289,10 @@ class _BackupRestorePanelState extends OptimizedState<BackupRestorePanel> {
                                       title: "Restore Backup?",
                                       content: const Text("Are you sure you want to restore this backup, overwriting your current Settings?"),
                                       onNo: () => Navigator.of(context).pop(),
-                                      onYes: () {
+                                      onYes: () async {
                                         Navigator.of(context).pop();
                                         try {
-                                          Settings.updateFromMap(item);
+                                          await ss.restoreSettings(Map<String, dynamic>.from(item));
                                           showSnackbar("Success", "Settings restored successfully");
                                         } catch (e, s) {
                                           Logger.error("Failed to restore settings backup!", error: e, trace: s);
@@ -594,12 +594,12 @@ class _BackupRestorePanelState extends OptimizedState<BackupRestorePanel> {
                                 title: "Restore Settings?",
                                 content: const Text("Are you sure you want to restore this backup, overwriting your current Settings?"),
                                 onNo: () => Navigator.of(context).pop(),
-                                onYes: () {
+                                onYes: () async {
                                   Navigator.of(context).pop();
                                   try {
                                     String jsonString = const Utf8Decoder().convert(res.files.first.bytes!);
                                     Map<String, dynamic> json = jsonDecode(jsonString);
-                                    Settings.updateFromMap(json);
+                                    await ss.restoreSettings(json);
                                     showSnackbar("Success", "Settings restored successfully");
                                   } catch (e, s) {
                                     Logger.error("Failed to restore settings backup!", error: e, trace: s);

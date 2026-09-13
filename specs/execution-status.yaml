@@ -1,5 +1,5 @@
 initiative: e01
-status: not_started
+status: in_progress
 ledger_semantics: "Task failing means acceptance unmet, not a recorded test failure."
 environment:
   evidence: verifications/e01/android-environment.md
@@ -7,13 +7,15 @@ environment:
   native_submodules: initialized
   channel_smoke_tests: "2 passed; infrastructure only"
   emulator: "API 36 tablet foreground boot and OS rotation round-trip passed; cleanly stopped"
-  app_build: "x86_64 build timed out; Rust/protoc prerequisites remain"
+  app_build: "x86_64 alpha/debug builds passed with CI-only placeholder FairPlay fixtures; not a production upgrade artifact"
+  rust_protoc_ndk: "Rust stable, protoc 28.3 and Android NDK installed"
+  native_fixture: "API36 tablet actual OS rotation/draft + preference reload test passed; see verifications/e01/implementation.md"
 stories:
   e01s01:
-    status: not_started
-    verification: not_run
-    blockers: [native_build_prerequisites, native_device_matrix]
+    status: in_progress
+    verification: host_and_api36_native_fixture_passed
+    blockers: [full_app_chat_attachment_reply_validation, remaining_native_device_matrix]
   e01s02:
-    status: not_started
-    verification: not_run
-    blockers: [e01s01, native_enforcement_feasibility, platform_policy_decision]
+    status: in_progress
+    verification: host_settings_and_native_preference_reload_passed_enforcement_unverified
+    blockers: [native_enforcement_feasibility, native_device_matrix, platform_policy_decision]

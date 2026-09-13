@@ -1,5 +1,6 @@
 import 'package:bluebubbles/app/wrappers/titlebar_wrapper.dart';
 import 'package:bluebubbles/app/wrappers/theme_switcher.dart';
+import 'package:bluebubbles/helpers/ui/tablet_layout_policy.dart';
 import 'package:bluebubbles/helpers/types/helpers/misc_helpers.dart';
 import 'package:bluebubbles/services/services.dart';
 import 'package:bluebubbles/utils/logger/logger.dart';
@@ -28,8 +29,15 @@ class NavigatorService extends GetxService {
   /// Returns widthChatListLeft if in tablet mode, and 0 otherwise
   double widthChatListLeft(BuildContext context) => isTabletMode(context) ? _widthChatListLeft ?? 0 : 0;
 
-  bool isTabletMode(BuildContext context) => (!context.isPhone || context.width / context.height > 0.8) &&
-      ss.settings.tabletMode.value && context.width > 600;
+  bool isTabletMode(BuildContext context) => usesTabletSplitLayout(
+        tabletMode: ss.settings.tabletMode.value,
+        isPhone: context.isPhone,
+        width: context.width,
+        height: context.height,
+        isBubble: ls.isBubble,
+        isDesktop: kIsDesktop,
+        isWeb: kIsWeb,
+      );
 
   /// grab the available screen width, returning the split screen width if applicable
   /// this should *always* be used in place of context.width or similar
@@ -48,9 +56,13 @@ class NavigatorService extends GetxService {
   
   bool isAvatarOnly(BuildContext context) => (kIsDesktop || kIsWeb) && isTabletMode(context) && (_widthChatListLeft ?? context.width) < 300;
 
+  /// Nested panes stay mounted in portrait so route ownership remains stable
+  /// while the visual presentation switches between one and two panes.
+  bool _hasPane(int id) => Get.keys[id]?.currentState != null;
+
   /// Push a new route onto the chat list right side navigator
   void push(BuildContext context, Widget widget) {
-    if (Get.keys.containsKey(2) && isTabletMode(context)) {
+    if (_hasPane(2)) {
       Get.to(() => widget, transition: Transition.rightToLeft, id: 2);
     } else {
       Navigator.of(context).push(ThemeSwitcher.buildPageRoute(
@@ -61,7 +73,7 @@ class NavigatorService extends GetxService {
 
   /// Push a new route onto the chat list left side navigator
   Future<void> pushLeft(BuildContext context, Widget widget) async {
-    if (Get.keys.containsKey(1) && isTabletMode(context)) {
+    if (_hasPane(1)) {
       await Get.to(() => widget, transition: Transition.leftToRight, id: 1);
     } else {
       await Navigator.of(context).push(ThemeSwitcher.buildPageRoute(
@@ -72,7 +84,7 @@ class NavigatorService extends GetxService {
 
   /// Push a new route onto the settings navigator
   Future<dynamic> pushSettings(BuildContext context, Widget widget, {Bindings? binding}) async {
-    if (Get.keys.containsKey(3) && isTabletMode(context)) {
+    if (_hasPane(3)) {
       return await Get.to(() => widget, transition: Transition.rightToLeft, id: 3, binding: binding);
     } else {
       binding?.dependencies();
@@ -85,7 +97,7 @@ class NavigatorService extends GetxService {
   /// Push a new route, popping all previous routes, on the chat list right side navigator
   Future<void> pushAndRemoveUntil(BuildContext context, Widget widget, bool Function(Route) predicate,
       {bool closeActiveChat = true, PageRoute? customRoute}) async {
-    if (Get.keys.containsKey(2) && isTabletMode(context)) {
+    if (_hasPane(2)) {
       if (closeActiveChat && cm.activeChat != null) {
         Logger.debug("Closing active chat: ${cm.activeChat!.chat.guid}", tag: "NavigatorService");
         cvc(cm.activeChat!.chat).close();
@@ -109,8 +121,8 @@ class NavigatorService extends GetxService {
   /// Push a new route, popping all previous routes, on the settings navigator
   void pushAndRemoveSettingsUntil(BuildContext context, Widget widget, bool Function(Route) predicate,
       {Bindings? binding}) {
-    if (Get.keys.containsKey(3) && isTabletMode(context)) {
-      // we only want to offUntil when in landscape, otherwise when the user presses back, the previous page will be the chat list
+    if (_hasPane(3)) {
+      // The right pane owns settings routes in both orientations.
       Get.offUntil(GetPageRoute(
         page: () => widget,
         binding: binding,
@@ -126,53 +138,37 @@ class NavigatorService extends GetxService {
     }
   }
 
-  void backConversationView(BuildContext context) {
-    if (Get.keys.containsKey(3) &&
-        Get.keys[3]?.currentContext != null &&
-        isTabletMode(context)) {
-      Get.until((route) {
-        if (route.settings.name == "initial") {
-          Get.back();
-        } else {
-          Get.back(id: 3);
+  /// Pops the currently active nested pane, regardless of whether it is
+  /// presented as a split pane or the single portrait pane.
+  ///
+  /// Returns whether a route was handled so production [PopScope]s can fall
+  /// back to the root navigator or system Back exactly once.
+  Future<bool> backConversationView(BuildContext context, {bool allowRootFallback = true}) async {
+    for (final id in [3, 2, 1]) {
+      final pane = Get.keys[id]?.currentState;
+      // Global pane keys can remain mounted beneath a newer root route.
+      if (pane == null || !(ModalRoute.of(pane.context)?.isCurrent ?? false)) continue;
+      final hadRoute = pane.canPop();
+      // maybePop also gives an initial route's PopScope a chance to dismiss
+      // selection/attachment UI. Direct pop bypasses that local Back contract.
+      if (await pane.maybePop()) {
+        if (id == 2 && hadRoute && pane.mounted && !pane.canPop()) {
+          if (cm.activeChat != null) cvc(cm.activeChat!.chat).close();
+          eventDispatcher.emit('update-highlight', null);
         }
         return true;
-      }, id: 3);
-    } else if (Get.keys.containsKey(2) &&
-        Get.keys[2]?.currentContext != null &&
-        isTabletMode(context)) {
-      if (Get.currentRoute.isEmpty) {
-        Get.back();
-        return;
       }
-      Get.until((route) {
-        bool id2result = false;
-        // check if we should pop the left side first
-        Get.until((route) {
-          if (route.settings.name != "initial") {
-            Get.back(id: 2);
-            id2result = true;
-          }
-          if (!(Get.global(2).currentState?.canPop() ?? true)) {
-            if (cm.activeChat != null) {
-              cvc(cm.activeChat!.chat).close();
-            }
-            eventDispatcher.emit('update-highlight', null);
-          }
-          return true;
-        }, id: 2);
-        if (!id2result) {
-          if (route.settings.name != "initial") {
-            Get.back(id: 1);
-          }
-        }
-        return true;
-      }, id: 1);
     }
+    // A root PopScope calls this with fallback disabled to avoid recursively
+    // dispatching the same rejected system Back to itself.
+    if (allowRootFallback && context.mounted) {
+      return Navigator.of(context, rootNavigator: true).maybePop();
+    }
+    return false;
   }
 
   void closeSettings(BuildContext context) {
-    if (Get.keys.containsKey(3) && Get.keys[3]?.currentContext != null && isTabletMode(context)) {
+    if (_hasPane(3)) {
       Get.until((route) => route.isFirst, id: 3);
       Get.back(closeOverlays: true);
     } else {
@@ -182,7 +178,7 @@ class NavigatorService extends GetxService {
 
   /// Remember to call `await cm.setAllInactive()` after calling this function
   void closeAllConversationView(BuildContext context) {
-    if (Get.keys.containsKey(2) && Get.keys[2]?.currentContext != null && ns.isTabletMode(context)) {
+    if (_hasPane(2)) {
       Get.until((route) {
         return route.settings.name == "initial";
       }, id: 2);
@@ -191,7 +187,7 @@ class NavigatorService extends GetxService {
   }
 
   void backSettings(BuildContext context, {dynamic result, bool closeOverlays = false}) {
-    if (Get.keys.containsKey(3) && isTabletMode(context)) {
+    if (_hasPane(3)) {
       Get.back(result: result, closeOverlays: closeOverlays, id: 3);
     } else {
       Get.back(result: result, closeOverlays: closeOverlays);

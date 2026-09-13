@@ -54,12 +54,7 @@ class SettingsService extends GetxService {
       if (settings.immersiveMode.value) {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       }
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeRight,
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.portraitUp,
-        if (settings.allowUpsideDownRotation.value) DeviceOrientation.portraitDown,
-      ]);
+      await applyOrientationPolicy();
     }
     // launch at startup
     if (kIsDesktop) {
@@ -72,6 +67,36 @@ class SettingsService extends GetxService {
     }
 
     initCompleted.complete();
+  }
+
+  /// Applies the one mobile orientation policy used at startup and by settings.
+  /// Android 16 large screens and iPad multitasking can ignore this request;
+  /// the native verification matrix records those limitations without changing
+  /// multitasking support or the target SDK.
+  static List<DeviceOrientation> orientationPolicy({
+    required bool lockToPortrait,
+    required bool allowUpsideDownRotation,
+  }) => lockToPortrait
+      ? const [DeviceOrientation.portraitUp]
+      : [
+          DeviceOrientation.landscapeRight,
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.portraitUp,
+          if (allowUpsideDownRotation) DeviceOrientation.portraitDown,
+        ];
+
+  Future<void> applyOrientationPolicy({bool headless = false}) async {
+    if (headless || kIsWeb || kIsDesktop) return;
+    await SystemChrome.setPreferredOrientations(orientationPolicy(
+      lockToPortrait: settings.lockToPortrait.value,
+      allowUpsideDownRotation: settings.allowUpsideDownRotation.value,
+    ));
+  }
+
+  /// Restores settings durably before making the restored policy live.
+  Future<void> restoreSettings(Map<String, dynamic> values, {bool headless = false}) async {
+    await Settings.updateFromMap(values);
+    await applyOrientationPolicy(headless: headless);
   }
 
   /// Returns true if LaunchAtStartup is enabled and false if it is disabled

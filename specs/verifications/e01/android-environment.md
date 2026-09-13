@@ -1,6 +1,8 @@
 # Android environment setup evidence
 
-## Status: emulator verified — app build remains blocked
+## Setup baseline: emulator verified
+
+This records the earlier environment setup. Subsequent Rust/protoc/NDK installation, successful test APK builds and native feature-fixture results are recorded in [implementation.md](implementation.md). Build blockers below are historical, not the current build status.
 
 User approved user-local toolchain/image installation and Android SDK license acceptance. No system package installation, shell-profile edit, release signing or live Apple-account setup was performed.
 

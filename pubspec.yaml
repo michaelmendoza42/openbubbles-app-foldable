@@ -243,6 +243,8 @@ dev_dependencies:
   objectbox_generator: any
   flutter_test:
     sdk: flutter
+  integration_test:
+    sdk: flutter
   freezed: ^2.4.1
   in_app_purchase_platform_interface: ^1.4.0
 

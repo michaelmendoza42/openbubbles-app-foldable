@@ -115,6 +115,7 @@ class _SettingsPageState extends OptimizedState<SettingsPage> {
                   minRatio: kIsDesktop || kIsWeb ? 0.2 : 0.33,
                   maxRatio: 0.5,
                   allowResize: true,
+                  showRightInSinglePane: () => Get.keys[3]?.currentState?.canPop() ?? false,
                   left: SettingsScaffold(
                       title: "Settings",
                       initialHeader:
@@ -1301,18 +1302,15 @@ class _SettingsPageState extends OptimizedState<SettingsPage> {
                     ns.maxWidthSettings = constraints.maxWidth;
                     return PopScope(
                       canPop: false,
-                      onPopInvoked: (_) async {
-                        Get.until((route) {
-                          if (route.settings.name == "initial") {
-                            Get.back();
-                          } else {
-                            Get.back(id: 3);
-                          }
-                          return true;
-                        }, id: 3);
+                      onPopInvoked: (didPop) async {
+                        if (didPop) return;
+                        if (!await ns.backConversationView(context, allowRootFallback: false) && context.mounted) {
+                          Navigator.of(context, rootNavigator: true).pop();
+                        }
                       },
                       child: Navigator(
                         key: Get.nestedKey(3),
+                        observers: [TabletPaneNavigatorObserver()],
                         onPopPage: (route, _) {
                           route.didPop(false);
                           return false;

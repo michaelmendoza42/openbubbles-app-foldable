@@ -1,8 +1,10 @@
 import 'dart:math';
 
 import 'package:bluebubbles/helpers/helpers.dart';
+import 'package:bluebubbles/helpers/ui/tablet_layout_policy.dart';
 import 'package:bluebubbles/services/services.dart';
 import 'package:bluebubbles/utils/window_effects.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:get/get.dart';
@@ -142,15 +144,30 @@ mixin ThemeHelpers<T extends StatefulWidget> on State<T> {
   /// Tile / foreground color on settings pages
   Color get tileColor => reverseMapping ? _headerColor : _tileColor;
 
-  /// Whether or not to use tablet mode
-  bool get showAltLayout =>
-      ss.settings.tabletMode.value && (!context.isPhone || context.width / context.height > 0.8) && context.width > 600 && !ls.isBubble;
+  /// Whether to show the split tablet layout for this view.
+  bool get showAltLayout => usesTabletSplitLayout(
+        tabletMode: ss.settings.tabletMode.value,
+        isPhone: context.isPhone,
+        width: context.width,
+        height: context.height,
+        isBubble: ls.isBubble,
+        isDesktop: kIsDesktop,
+        isWeb: kIsWeb,
+      );
 
-  bool get showAltLayoutContextless =>
-      ss.settings.tabletMode.value &&
-      (!Get.context!.isPhone || Get.context!.width / Get.context!.height > 0.8) &&
-      Get.context!.width > 600 &&
-      !ls.isBubble;
+  bool get showAltLayoutContextless {
+    final context = Get.context;
+    if (context == null) return false;
+    return usesTabletSplitLayout(
+      tabletMode: ss.settings.tabletMode.value,
+      isPhone: context.isPhone,
+      width: context.width,
+      height: context.height,
+      isBubble: ls.isBubble,
+      isDesktop: kIsDesktop,
+      isWeb: kIsWeb,
+    );
+  }
 
   bool get iOS => ss.settings.skin.value == Skins.iOS;
 

@@ -213,70 +213,43 @@ class _ConversationListState extends CustomState<ConversationList, void, Convers
         statusBarColor: Colors.transparent, // status bar color
         statusBarIconBrightness: brightness.opposite,
       ),
-      child: TabletModeWrapper(
-        initialRatio: 0.4,
-        minWidthLeft: kIsDesktop || kIsWeb ? 150 : null,
-        minRatio: kIsDesktop || kIsWeb ? 0.1 : 0.33,
-        maxRatio: 0.5,
-        allowResize: true,
-        left: !showAltLayout
-            ? child
-            : LayoutBuilder(builder: (context, constraints) {
-                ns.maxWidthLeft = constraints.maxWidth;
-                return PopScope(
-                  canPop: false,
-                  onPopInvoked: (_) async {
-                    Get.until((route) {
-                      bool id2result = false;
-                      // check if we should pop the left side first
-                      Get.until((route) {
-                        if (route.settings.name != "initial") {
-                          Get.back(id: 2);
-                          id2result = true;
-                        }
-                        if (!(Get.global(2).currentState?.canPop() ?? true)) {
-                          if (cm.activeChat != null) {
-                            cvc(cm.activeChat!.chat).close();
-                          }
-                          eventDispatcher.emit('update-highlight', null);
-                        }
-                        return true;
-                      }, id: 2);
-                      if (!id2result) {
-                        if (route.settings.name == "initial") {
-                          SystemNavigator.pop();
-                        } else {
-                          Get.back(id: 1);
-                        }
-                      }
-                      return true;
-                    }, id: 1);
-                  },
-                  child: Navigator(
-                    key: Get.nestedKey(1),
-                    requestFocus: false,
-                    onPopPage: (route, _) {
-                      return false;
-                    },
-                    pages: [
-                      CupertinoPage(
-                        name: "initial",
-                        child: child,
-                      )
-                    ],
-                  ),
-                );
-              }),
-        right: LayoutBuilder(
-          builder: (context, constraints) {
-            ns.maxWidthRight = constraints.maxWidth;
-            return PopScope(
-              canPop: false,
-              onPopInvoked: (_) async {
-                Get.back(id: 2);
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: <T>(bool didPop, T? result) async {
+          if (!didPop && !await ns.backConversationView(context, allowRootFallback: false)) {
+            SystemNavigator.pop();
+          }
+        },
+        child: TabletModeWrapper(
+          initialRatio: 0.4,
+          minWidthLeft: kIsDesktop || kIsWeb ? 150 : null,
+          minRatio: kIsDesktop || kIsWeb ? 0.1 : 0.33,
+          maxRatio: 0.5,
+          allowResize: true,
+          showRightInSinglePane: () => Get.keys[2]?.currentState?.canPop() ?? false,
+          left: LayoutBuilder(builder: (context, constraints) {
+            ns.maxWidthLeft = constraints.maxWidth;
+            return Navigator(
+              key: Get.nestedKey(1),
+              requestFocus: false,
+              observers: [TabletPaneNavigatorObserver()],
+              onPopPage: (route, _) {
+                return false;
               },
-              child: Navigator(
+              pages: [
+                CupertinoPage(
+                  name: "initial",
+                  child: child,
+                )
+              ],
+            );
+          }),
+          right: LayoutBuilder(
+            builder: (context, constraints) {
+              ns.maxWidthRight = constraints.maxWidth;
+              return Navigator(
                 key: Get.nestedKey(2),
+                observers: [TabletPaneNavigatorObserver()],
                 onPopPage: (route, _) {
                   return false;
                 },
@@ -286,9 +259,9 @@ class _ConversationListState extends CustomState<ConversationList, void, Convers
                     child: InitialWidgetRight(),
                   ),
                 ],
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

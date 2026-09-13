@@ -74,6 +74,7 @@ class Settings {
   final RxBool statusIndicatorsOnChats = false.obs;
   final RxInt apiTimeout = 30000.obs;
   final RxBool allowUpsideDownRotation = false.obs;
+  final RxBool lockToPortrait = false.obs;
   final RxBool cancelQueuedMessages = false.obs;
   final RxBool repliesToPrevious = false.obs;
   final RxnString localhostPort = RxnString(null);
@@ -361,6 +362,7 @@ class Settings {
       'indicatorsOnPinnedChats': statusIndicatorsOnChats.value,
       'apiTimeout': apiTimeout.value,
       'allowUpsideDownRotation': allowUpsideDownRotation.value,
+      'lockToPortrait': lockToPortrait.value,
       'cancelQueuedMessages': cancelQueuedMessages.value,
       'repliesToPrevious': repliesToPrevious.value,
       'useLocalhost': localhostPort.value,
@@ -471,7 +473,7 @@ class Settings {
     return map;
   }
 
-  static void updateFromMap(Map<String, dynamic> map) {
+  static Future<void> updateFromMap(Map<String, dynamic> map) async {
     ss.settings.autoDownload.value = map['autoDownload'] ?? true;
     ss.settings.onlyWifiDownload.value = map['onlyWifiDownload'] ?? false;
     ss.settings.autoSave.value = map['autoSave'] ?? false;
@@ -525,6 +527,7 @@ class Settings {
     ss.settings.statusIndicatorsOnChats.value = map['indicatorsOnPinnedChats'] ?? false;
     ss.settings.apiTimeout.value = map['apiTimeout'] ?? 15000;
     ss.settings.allowUpsideDownRotation.value = map['allowUpsideDownRotation'] ?? false;
+    ss.settings.lockToPortrait.value = map['lockToPortrait'] ?? false;
     ss.settings.cancelQueuedMessages.value = map['cancelQueuedMessages'] ?? false;
     ss.settings.repliesToPrevious.value = map['repliesToPrevious'] ?? false;
     ss.settings.localhostPort.value = map['useLocalhost'];
@@ -629,7 +632,7 @@ class Settings {
     ss.settings.syncHistoryTime.value = map['syncHistoryTime'] ?? 0;
     ss.settings.ctags.value = map['ctags'] ?? {};
     ss.settings.tokens.value = map['tokens'] ?? {};
-    ss.settings.save();
+    await ss.settings.saveAsync();
 
     eventDispatcher.emit("theme-update", null);
   }
@@ -699,6 +702,7 @@ class Settings {
     s.statusIndicatorsOnChats.value = map['indicatorsOnPinnedChats'] ?? false;
     s.apiTimeout.value = map['apiTimeout'] ?? 15000;
     s.allowUpsideDownRotation.value = map['allowUpsideDownRotation'] ?? false;
+    s.lockToPortrait.value = map['lockToPortrait'] ?? false;
     s.cancelQueuedMessages.value = map['cancelQueuedMessages'] ?? false;
     s.repliesToPrevious.value = map['repliesToPrevious'] ?? false;
     s.localhostPort.value = map['useLocalhost'];
