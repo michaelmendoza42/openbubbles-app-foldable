@@ -1,0 +1,49 @@
+feature_name: "Tablet portrait layout and universal portrait lock"
+core_value: "Use tablets comfortably in portrait without losing the current chat, and optionally keep phones or tablets in portrait."
+summary: >-
+  Tablet portrait mode becomes a single full-width phone-style layout. Device
+  rotation selects portrait or the existing landscape tablet layout by default.
+  An optional portrait lock is available on phones and tablets and persists
+  across restarts. Switching layouts preserves the open conversation and draft.
+  This scope describes desired behavior, not a guarantee that every native OS
+  permits an application to force orientation; platform feasibility must be
+  resolved before the lock story can be accepted.
+in_scope:
+  - id: R1
+    description: "Single-pane tablet portrait with existing landscape layout and automatic switching."
+    story_id: e01s01
+  - id: R2
+    description: "Keep the open conversation and unsent draft across layout transitions."
+    story_id: e01s01
+  - id: R3
+    description: "Universal phone/tablet Lock to portrait setting, off by default and persisted across restarts."
+    story_id: e01s02
+  - id: R4
+    description: "When lock is off, follow device auto-rotate; disabling lock restores normal rotation behavior."
+    story_id: e01s02
+out_of_scope:
+  - item: "Replacing the landscape tablet layout"
+    reason: "The user explicitly chose to retain it."
+  - item: "Unrelated styling, messaging, auth or storage redesign"
+    reason: "Not needed for the confirmed portrait behavior."
+  - item: "Changing device-wide rotation preferences"
+    reason: "The preference is app-local."
+  - item: "Desktop/web orientation-lock behavior or layout redesign"
+    reason: "Universal was clarified as phones and tablets."
+  - item: "Disabling OS multi-window support or lowering target SDK without an explicit decision"
+    reason: "These alter unrelated platform behavior and are not implied by no in-app split pane."
+constraints:
+  - "Preserve existing landscape layout, tablet-mode toggle and unrelated settings."
+  - "Portrait lock wins over optional upside-down rotation while enabled; preserve that preference for unlock."
+  - "No new production dependencies are planned."
+  - "Native orientation restrictions must be tested and surfaced rather than silently weakening universal lock."
+success_criteria:
+  - "Portrait tablet shows one full-width pane; landscape retains the existing layout."
+  - "Active chat and unsent text/attachment drafts survive repeated rotations."
+  - "Phones and tablets can enable portrait lock and retain it after restart."
+  - "Lock off follows device-controlled orientation; lock on remains portrait."
+  - "Unsupported native enforcement is a release blocker until product/platform handling is explicitly resolved."
+references:
+  - "../planning-context.yaml"
+  - "../IMPACT_LATEST.md"
+  - "../tech-architecture/tech-stack.md"

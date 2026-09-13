@@ -1,0 +1,22 @@
+initiative: "Tablet portrait and portrait lock"
+release_version: null
+status: planned
+release_readiness: blocked
+release_gates:
+  - "e01s01 P0 chat/draft continuity and native layout matrix pass."
+  - "e01s02 native phone/tablet matrix passes, including process relaunch."
+  - "Required platform enforcement failures stay blocked until an explicit product/platform decision; do not silently skip or downgrade scope."
+scope: product/SCOPE_LATEST.yaml
+ordering_rationale: "One epic; deliver safe portrait layout first, then persisted orientation override. No version bump or publication is selected."
+epics:
+  - id: e01
+    title: "Tablet portrait and universal portrait lock"
+    capsule: epics/e01-tablet-portrait
+    status: planned
+    bcps: 8
+    wsjf: 1.5
+    wsjf_inputs:
+      business_value: 8
+      time_criticality: 1
+      risk_reduction: 3
+      job_size: 8

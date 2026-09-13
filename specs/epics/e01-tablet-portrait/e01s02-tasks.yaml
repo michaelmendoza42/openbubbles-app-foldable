@@ -1,0 +1,38 @@
+story_id: e01s02
+title: "Persisted phone/tablet portrait lock"
+status: failing
+bcps: 4
+prerequisites:
+  - "e01s01 implemented and verified."
+  - "Flutter SDK, native submodules, ANDROID_PHONE, ANDROID_TABLET_PRE16, ANDROID_TABLET_16_LARGE, IOS_PHONE and IOS_TABLET available."
+  - "iOS validation needs a supported macOS runner/device; use the matching device command without Android flavor."
+ledger_semantics: "failing means acceptance unmet; tests have not been executed during planning."
+native_contract: ../../tech-architecture/e01-NATIVE_TEST_CONTRACT.md
+tasks:
+  - id: 1
+    description: "Build native orientation probe; document Android 16 large-screen and iPad enforcement; resolve platform tradeoffs before lock implementation."
+    verify: "bash test_driver/verify_orientation_matrix.sh probe"
+    risk: P1
+    security: none
+    status: failing
+    allure:
+      severity: high
+      categories: [native-integration, platform-feasibility]
+  - id: 2
+    description: "Add RED persistence/channel/widget tests then implement lock with both deserializers, awaited saveOne, shared foreground policy and Misc control."
+    verify: "flutter test test/settings/portrait_lock_test.dart"
+    risk: P1
+    security: none
+    status: failing
+    allure:
+      severity: high
+      categories: [widget, settings, persistence]
+  - id: 3
+    description: "Verify actual phone/tablet lock, unlock, auto-rotate, upside-down interaction and relaunch persistence; record platform matrix and screenshots."
+    verify: "bash test_driver/verify_orientation_matrix.sh lock"
+    risk: P1
+    security: none
+    status: failing
+    allure:
+      severity: high
+      categories: [native-integration, persistence]

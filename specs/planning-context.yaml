@@ -1,0 +1,42 @@
+# Confirmed with the user via elaborate-spec. Requirements only; no implementation plan.
+feature_name: "Tablet portrait layout and universal portrait lock"
+problem_statement: >-
+  Tablet mode appears stuck in landscape. The user wants tablets to support
+  portrait orientation with a single full-width, phone-style layout rather than
+  a side-by-side conversation list and chat, while retaining the existing tablet
+  layout in landscape. Phones and tablets also need an optional portrait lock.
+actors:
+  - "Tablet users rotating between portrait and landscape"
+  - "Phone and tablet users who want the app to remain in portrait"
+constraints:
+  - "Default tablet behavior follows the device auto-rotate setting."
+  - "Portrait tablet mode uses a single-pane, wider phone-style layout."
+  - "Landscape tablet mode retains its existing layout."
+  - "Rotation preserves the open conversation and any draft."
+  - "The portrait-lock preference is remembered across app restarts."
+  - "Other layouts and styling remain unchanged."
+out_of_scope:
+  - "Removing the existing landscape tablet layout"
+  - "Unrelated layout or styling redesign"
+  - "Changing the device-wide auto-rotate preference"
+key_decisions:
+  - decision: "Use a single-pane tablet layout only in portrait."
+    rationale: "The user chose wider phone-style portrait behavior while retaining the landscape tablet layout."
+  - decision: "Switch tablet layouts automatically with device rotation by default."
+    rationale: "The user confirmed that rotation should follow the device auto-rotate setting."
+  - decision: "Add an optional Lock to portrait setting for both phones and tablets."
+    rationale: "The user requested an always-portrait override and specified universal phone/tablet availability."
+  - decision: "Persist the setting across restarts and preserve conversation/draft state on rotation."
+    rationale: "The user confirmed these requirements in the final scope summary."
+success_criteria:
+  - "With portrait lock disabled and device auto-rotate enabled, rotating a tablet to portrait shows a single-pane layout."
+  - "Rotating that tablet back to landscape restores the existing tablet layout."
+  - "With portrait lock disabled, the app respects the device auto-rotate setting."
+  - "Enabling Lock to portrait keeps the app in portrait on phones and tablets regardless of physical rotation."
+  - "The chosen portrait-lock preference survives app restart."
+  - "Disabling portrait lock restores normal device-controlled orientation behavior."
+  - "The open conversation and unsent draft survive orientation-driven layout changes."
+planning_notes:
+  - "The reported landscape restriction is user-observed; its code-level cause has not yet been verified."
+  - "Universal means phones and tablets; desktop window-orientation behavior was not requested."
+  - "Exact setting placement, supported platform mechanisms, and regression-test approach remain for source inspection during planning."

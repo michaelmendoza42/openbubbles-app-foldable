@@ -1,0 +1,45 @@
+story_id: e01s01
+title: "Single-pane tablet portrait with state-preserving rotation"
+status: failing
+bcps: 4
+prerequisites:
+  - "Flutter SDK, dependency resolution and isolated test fixture available."
+  - "Native submodules/toolchains and all five device classes in e01-NATIVE_TEST_CONTRACT.md required for task 3."
+ledger_semantics: "failing means acceptance unmet; tests have not been executed during planning."
+tasks:
+  - id: 0
+    description: "Declare SDK integration_test, resolve lockfile, and implement host-driven native fixture/rotation/relaunch runners per e01-NATIVE_TEST_CONTRACT.md."
+    verify: "flutter pub get && flutter test test/harness/orientation_fixture_test.dart"
+    risk: P1
+    security: none
+    status: failing
+    allure:
+      severity: high
+      categories: [test-harness, native-integration]
+  - id: 1
+    description: "Add RED policy matrix, then align mobile portrait selection across render and routing entry points while preserving desktop/web behavior."
+    verify: "flutter test test/layout/tablet_layout_policy_test.dart"
+    risk: P1
+    security: none
+    status: failing
+    allure:
+      severity: high
+      categories: [unit, layout]
+  - id: 2
+    description: "Add RED navigation/draft fixtures, then retain active conversation across pane changes with correct Back, width and controller lifecycle."
+    verify: "flutter test test/layout/tablet_navigation_test.dart"
+    risk: P0
+    security: none
+    status: failing
+    allure:
+      severity: critical
+      categories: [widget, draft-preservation]
+  - id: 3
+    description: "Add and run real tablet rotation regression coverage, including text/attachment draft and screenshots."
+    verify: "bash test_driver/verify_orientation_matrix.sh layout"
+    risk: P0
+    security: none
+    status: failing
+    allure:
+      severity: critical
+      categories: [native-integration, draft-preservation]

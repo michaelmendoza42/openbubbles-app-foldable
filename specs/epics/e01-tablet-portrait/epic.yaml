@@ -1,0 +1,22 @@
+id: e01
+title: "Tablet portrait and universal portrait lock"
+status: planned
+bcps: 8
+scope: ../../product/SCOPE_LATEST.yaml
+stories:
+  - id: e01s01
+    title: "Single-pane tablet portrait with state-preserving rotation"
+    bcps: 4
+    delta: MODIFIED
+    requirements: [R1, R2]
+    spec: e01s01-portrait-layout.md
+    tasks: e01s01-tasks.yaml
+  - id: e01s02
+    title: "Persisted phone/tablet portrait lock"
+    bcps: 4
+    delta: ADDED
+    requirements: [R3, R4]
+    depends_on: [e01s01]
+    spec: e01s02-portrait-lock.md
+    tasks: e01s02-tasks.yaml
+    execution_gate: "Native enforcement feasibility must be resolved; do not disable OS multitasking or weaken universal scope silently."

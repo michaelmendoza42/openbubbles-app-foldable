@@ -1,0 +1,12 @@
+initiative: e01
+status: not_started
+ledger_semantics: "Task failing means acceptance unmet, not a recorded test failure."
+stories:
+  e01s01:
+    status: not_started
+    verification: not_run
+    blockers: [flutter_toolchain, native_submodules, native_device_matrix]
+  e01s02:
+    status: not_started
+    verification: not_run
+    blockers: [e01s01, native_enforcement_feasibility, platform_policy_decision]
