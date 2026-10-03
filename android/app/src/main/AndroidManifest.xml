@@ -314,6 +314,12 @@
             android:resizeableActivity="true"
             android:theme="@style/LaunchTheme"
             android:windowSoftInputMode="adjustResize">
+            <!-- Android 16 ignores orientation requests on >=600dp displays for
+                 targetSdk 36; this temporary opt-out lets Lock to Portrait work
+                 on unfolded foldables and tablets. Not honored once targetSdk >= 37. -->
+            <property
+                android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY"
+                android:value="true" />
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
 
