@@ -82,9 +82,11 @@ def main():
         # a completed Flutter integration run clears fixture app data, so do
         # not mislabel a third run as restart-continuation evidence.
 
-        # Android 16 tablet refusal is a measured failure, never a pass. The
-        # caller still receives its complete receipt and all screenshots.
-        expected_lock = args.device_class != 'android-tablet-16-large'
+        # MainActivity opts out of Android 16's large-screen orientation
+        # override (PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY), so the lock
+        # is expected to hold on every device class, including Android 16
+        # large screens. A refusal there is still recorded as a measured failure.
+        expected_lock = True
         all_persisted = relaunch.get('persisted') == True
         relaunch_viewport = relaunch.get('observations', {}).get('relaunch', {})
         unlock_viewport = relaunch.get('observations', {}).get('unlock', {})
@@ -98,7 +100,7 @@ def main():
         }
         if expected_lock and lock_enforced and all_persisted and unlock_restored:
             receipt['status'] = 'passed'
-        elif not expected_lock and not lock_enforced:
+        elif args.device_class == 'android-tablet-16-large' and not lock_enforced:
             receipt['status'] = 'measured-failure-android16-large-screen'
         else:
             receipt['status'] = 'failed'
