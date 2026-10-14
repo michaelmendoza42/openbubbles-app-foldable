@@ -394,10 +394,11 @@ class _MiscPanelState extends OptimizedState<MiscPanel> {
                             ss.settings.lockToPortrait.value = val;
                             await ss.settings.saveOne('lockToPortrait');
                             await ss.applyOrientationPolicy();
+                            eventDispatcher.emit('split-refresh', null);
                           },
                           initialVal: ss.settings.lockToPortrait.value,
                           title: "Lock to Portrait",
-                          subtitle: "Keeps OpenBubbles upright while this setting is enabled",
+                          subtitle: "Always uses the single-column layout, even when the screen is sideways",
                           backgroundColor: tileColor,
                           leading: const SettingsLeadingIcon(
                             iosIcon: CupertinoIcons.lock,

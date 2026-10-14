@@ -153,6 +153,7 @@ mixin ThemeHelpers<T extends StatefulWidget> on State<T> {
         isBubble: ls.isBubble,
         isDesktop: kIsDesktop,
         isWeb: kIsWeb,
+        lockToPortrait: ss.settings.lockToPortrait.value,
       );
 
   bool get showAltLayoutContextless {
@@ -166,6 +167,7 @@ mixin ThemeHelpers<T extends StatefulWidget> on State<T> {
       isBubble: ls.isBubble,
       isDesktop: kIsDesktop,
       isWeb: kIsWeb,
+      lockToPortrait: ss.settings.lockToPortrait.value,
     );
   }
 

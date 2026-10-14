@@ -10,6 +10,7 @@ void main() {
     bool isBubble = false,
     bool isDesktop = false,
     bool isWeb = false,
+    bool lockToPortrait = false,
   }) =>
       usesTabletSplitLayout(
         tabletMode: tabletMode,
@@ -19,6 +20,7 @@ void main() {
         isBubble: isBubble,
         isDesktop: isDesktop,
         isWeb: isWeb,
+        lockToPortrait: lockToPortrait,
       );
 
   group('tablet split layout policy', () {
@@ -38,6 +40,19 @@ void main() {
       expect(split(width: 601, height: 500), isTrue);
       expect(split(width: 800, height: 800), isFalse);
       expect(split(width: 1280, height: 800, tabletMode: false), isFalse);
+    });
+
+    test('Lock to Portrait keeps mobile single-pane even in landscape', () {
+      expect(split(width: 1280, height: 800, lockToPortrait: true), isFalse);
+      expect(split(width: 800, height: 1280, lockToPortrait: true), isFalse);
+    });
+
+    test('Lock to Portrait does not change desktop and web layout', () {
+      expect(
+          split(width: 800, height: 1280, isDesktop: true, lockToPortrait: true),
+          isTrue);
+      expect(split(width: 1280, height: 800, isWeb: true, lockToPortrait: true),
+          isTrue);
     });
 
     test('does not enable split layout for bubbles', () {

@@ -37,6 +37,7 @@ class NavigatorService extends GetxService {
         isBubble: ls.isBubble,
         isDesktop: kIsDesktop,
         isWeb: kIsWeb,
+        lockToPortrait: ss.settings.lockToPortrait.value,
       );
 
   /// grab the available screen width, returning the split screen width if applicable

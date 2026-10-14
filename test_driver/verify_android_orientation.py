@@ -82,11 +82,10 @@ def main():
         # a completed Flutter integration run clears fixture app data, so do
         # not mislabel a third run as restart-continuation evidence.
 
-        # MainActivity opts out of Android 16's large-screen orientation
-        # override (PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY), so the lock
-        # is expected to hold on every device class, including Android 16
-        # large screens. A refusal there is still recorded as a measured failure.
-        expected_lock = True
+        # Android 16+ ignores the portrait request on large screens; Lock to
+        # Portrait relies on the single-pane layout there instead, so the
+        # refusal is recorded as a measured result, never a pass.
+        expected_lock = args.device_class != 'android-tablet-16-large'
         all_persisted = relaunch.get('persisted') == True
         relaunch_viewport = relaunch.get('observations', {}).get('relaunch', {})
         unlock_viewport = relaunch.get('observations', {}).get('unlock', {})
@@ -100,7 +99,7 @@ def main():
         }
         if expected_lock and lock_enforced and all_persisted and unlock_restored:
             receipt['status'] = 'passed'
-        elif args.device_class == 'android-tablet-16-large' and not lock_enforced:
+        elif not expected_lock and not lock_enforced:
             receipt['status'] = 'measured-failure-android16-large-screen'
         else:
             receipt['status'] = 'failed'
